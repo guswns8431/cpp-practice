@@ -6,7 +6,7 @@
 #    By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/09/28 12:22:39 by jseo              #+#    #+#              #
-#    Updated: 2021/09/29 16:53:12 by jseo             ###   ########.fr        #
+#    Updated: 2021/09/29 16:53:26 by jseo             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,7 +27,7 @@ CDEBUG				=		-g -fsanitize=address
 RM					=		rm -f
 NAME				=		test
 
-FILES				=		main.cpp h_thread_pool.cpp
+FILES				=		main.cpp
 SRCS				=		$(addprefix ./, $(FILES))
 OBJS				=		$(SRCS:.cpp=.o)
 
