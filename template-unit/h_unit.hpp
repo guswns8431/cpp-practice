@@ -6,7 +6,7 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/29 17:28:33 by jseo              #+#    #+#             */
-/*   Updated: 2021/09/29 19:38:39 by jseo             ###   ########.fr       */
+/*   Updated: 2021/09/29 19:57:44 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,18 @@ std::ostream& operator<<(std::ostream& out, const quantity<T, D>& q)
 {
 	out << q.t << "\tkg^" << D::X::num / D::X::den << "\tm^" << D::Y::num / D::Y::den << "\ts^" << D::Z::num / D::Z::den;
 	return (out);
+}
+
+template <typename C, typename T, typename D>
+quantity <T, D> operator*(C c, quantity<T, D> q)
+{
+	return (quantity<T, D>(static_cast<T>(c) * q.t));
+}
+
+template <typename C, typename T, typename D>
+quantity <T, D> operator/(C c, quantity<T, D> q)
+{
+	return (quantity<T, D>(static_cast<T>(c) / q.t));
 }
 
 #endif

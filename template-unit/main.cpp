@@ -6,14 +6,11 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/29 16:53:28 by jseo              #+#    #+#             */
-/*   Updated: 2021/09/29 19:46:41 by jseo             ###   ########.fr       */
+/*   Updated: 2021/09/29 19:59:11 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "h_unit.hpp"
-
-using zero = ratio<0, 1>;
-using one = ratio<1, 1>;
 
 int main(void)
 {
@@ -27,7 +24,9 @@ int main(void)
 	std::cout << "(" << r3::num << " / " << r3::den << ") + " << "(15 / 6) = (" << r4::num << " / " << r4::den << ")\n";
 	*/
 
-	/*
+	using zero = ratio<0, 1>;
+	using one = ratio<1, 1>;
+
 	quantity<double, dimension<one, zero, zero> > kg(1);
 	quantity<double, dimension<zero, one, zero> > m(1);
 	quantity<double, dimension<zero, zero, one> > s(1);
@@ -36,9 +35,9 @@ int main(void)
 	std::cout << m << "\n";
 	std::cout << s << "\n";
 
-	decltype(kg) tmp1(3);
-	decltype(m) tmp2(4);
-	decltype(s) tmp3(5);
+	decltype(kg) tmp1(1);
+	decltype(m) tmp2(1);
+	decltype(s) tmp3(1);
 
 	kg = tmp1;
 	m = tmp2;
@@ -63,18 +62,10 @@ int main(void)
 	std::cout << copy_kg << "\n";
 	std::cout << copy_m << "\n";
 	std::cout << copy_s << "\n";
-	*/
 
-	using kg = quantity<double, dimension<one, zero, zero> >;
-	using m = quantity<double, dimension<zero, one, zero> >;
-	using s = quantity<double, dimension<zero, zero, one> >;
-
-	kg x(2);
-	m y(3);
-	s z(1);
-
-	auto value = x * y / (z * z);
-	std::cout << "Threw 2kg material accelerated by 3m/s^2\n\t" << value << "\n";
+	auto value1 = 2 * kg * 3 * m / (s * s);
+	auto value2 = 3 / (s * s) * m;
+	std::cout << value1 << "\n" << value2;
 
 	return (0);
 }
