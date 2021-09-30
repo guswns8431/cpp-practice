@@ -6,7 +6,7 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/30 13:08:40 by jseo              #+#    #+#             */
-/*   Updated: 2021/09/30 13:39:28 by jseo             ###   ########.fr       */
+/*   Updated: 2021/09/30 16:14:32 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,9 @@
 
 int main(void)
 {
-	auto t_ptr = std::make_shared<table>();
-	auto d = std::make_shared<numeric_cell<double> >(30.01, 0, 0, t_ptr);
+	auto t = std::make_shared<table>();
+	auto d = std::make_shared<date_cell>("604-02-29", 0, 0, t);
 
-	std::cout << d->get_col() << "\n"
-		<< d->get_row() << "\n"
-		<< d->to_numeric() << "\n"
-		<< d->stringify() ;
-
+	std::cout << d->to_numeric() << "\n" << d->stringify();
 	return (0);
 }
