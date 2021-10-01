@@ -6,7 +6,7 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/01 15:06:30 by jseo              #+#    #+#             */
-/*   Updated: 2021/10/01 18:35:35 by jseo             ###   ########.fr       */
+/*   Updated: 2021/10/01 19:19:36 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,13 @@
 
 # include <ctime>
 # include <cctype>
+# include <fstream>
 # include <iomanip>
 # include <iostream>
 # include <memory>
 # include <sstream>
 # include <stack>
 # include <string>
-# include <typeinfo>
 # include <vector>
 
 class cell;
@@ -385,7 +385,7 @@ class table
 		table& operator=(const table& t) = default;
 		virtual ~table(void) = default;
 
-		virtual std::string				print() = 0;
+		virtual std::string				print(void) { return (""); }
 
 		table(int max_row, int max_col)
 		{
@@ -552,12 +552,70 @@ class text_table : public table
 
 class html_table : public table
 {
+	public:
+		html_table(void) = delete;
+		html_table(const html_table& t) = default;
+		html_table(html_table&& t) = default;
+		html_table& operator=(const html_table& t) = default;
+		~html_table(void) = default;
 
+		html_table(int max_row, int max_col) : table(max_row, max_col) {}
+
+		std::string						print(void) override
+		{
+			std::string					temp("<table border='1' cellpadding='10'>");
+
+			for (int i = 0 ; i < _max_pos.first ; ++i)
+			{
+				temp += std::string("<tr>");
+				for (int j = 0 ; j < _max_pos.second ; ++j)
+				{
+					temp += std::string("<td>");
+					std::string			cont = (_entries.at(i * _max_pos.second + j)).second->stringify();
+					if (!cont.empty())
+						temp += cont;
+					temp += std::string("</td>");
+				}
+				temp += std::string("</tr>");
+			}
+			temp += std::string("</table>");
+			return (temp);
+		}
 };
 
 class csv_table : public table
 {
+	public:
+		csv_table(void) = delete;
+		csv_table(const csv_table& t) = default;
+		csv_table(csv_table&& t) = default;
+		csv_table& operator=(const csv_table& t) = default;
+		~csv_table(void) = default;
 
+		csv_table(int max_row, int max_col) : table(max_row, max_col) {}
+
+		std::string						print(void) override
+		{
+			std::string					temp;
+
+			for (int i = 0 ; i < _max_pos.first ; ++i)
+			{
+				for (int j = 0 ; j < _max_pos.second ; ++j)
+				{
+					if (j)
+						temp += ",";
+					std::string			cont = (_entries.at(i * _max_pos.second + j)).second->stringify();
+					for (int k = 0 ; k < static_cast<int>(cont.length()) ; ++k)
+					{
+						if (cont[k] == '"')
+							cont.insert(k++, 1, '"');
+					}
+					temp += std::string(1, '"') + cont + std::string(1, '"');
+				}
+				temp += std::string("\n");
+			}
+			return (temp);
+		}
 };
 
 std::ostream& operator<<(std::ostream& out, table *t_ptr)
@@ -570,6 +628,5 @@ long double								circular_find(t_ptr ptr, const std::string& str)
 {
 	return (ptr->to_numeric(str));
 }
-
 
 #endif
