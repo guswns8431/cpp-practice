@@ -6,7 +6,7 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/01 15:06:30 by jseo              #+#    #+#             */
-/*   Updated: 2021/10/02 01:04:36 by jseo             ###   ########.fr       */
+/*   Updated: 2021/10/02 01:40:59 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -504,6 +504,8 @@ class text_table : public table
 				cont = (_entries.at(row * _max_pos.second + i)).second->stringify();
 				if (cont.empty())
 					cont = std::string(blank[i] - 2, ' ');
+				else if (cont.length() < static_cast<size_t>(blank[i]))
+					temp += std::string(blank[i] - cont.length() - 2, ' ');
 				temp += cont;
 				temp += std::string(" |");
 			}
