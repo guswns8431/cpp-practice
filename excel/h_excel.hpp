@@ -6,7 +6,7 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/01 15:06:30 by jseo              #+#    #+#             */
-/*   Updated: 2021/10/01 19:19:36 by jseo             ###   ########.fr       */
+/*   Updated: 2021/10/02 01:04:36 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,7 +379,7 @@ class table
 		t_vec							_entries;
 
 	public:
-		table(void) = delete;
+		table(void) = default;
 		table(const table& t) = default;
 		table(table&& t) = default;
 		table& operator=(const table& t) = default;
@@ -410,6 +410,11 @@ class table
 				return (value);
 			};
 			std::generate_n(std::back_inserter(_entries), _max_pos.first * _max_pos.second, cell_alloc);
+		}
+
+		coord&							get_position(void)
+		{
+			return (_max_pos);
 		}
 
 		t_vec&							get_entries(void)
@@ -506,10 +511,18 @@ class text_table : public table
 		}
 
 	public:
-		text_table(void) = delete;
+		text_table(void) = default;
 		text_table(const text_table& t) = default;
 		text_table(text_table&& t) = default;
 		text_table& operator=(const text_table& t) = default;
+
+		text_table& operator=(table& t)
+		{
+			_max_pos = t.get_position();
+			_entries = t.get_entries();
+			return (*this);
+		}
+
 		~text_table(void) = default;
 
 		text_table(int max_row, int max_col) : table(max_row, max_col) {}
@@ -618,7 +631,7 @@ class csv_table : public table
 		}
 };
 
-std::ostream& operator<<(std::ostream& out, table *t_ptr)
+std::ostream&							operator<<(std::ostream& out, table *t_ptr)
 {
 	out << t_ptr->print();
 	return (out);

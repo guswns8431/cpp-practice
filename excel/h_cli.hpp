@@ -6,7 +6,7 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/01 19:19:57 by jseo              #+#    #+#             */
-/*   Updated: 2021/10/02 00:12:51 by jseo             ###   ########.fr       */
+/*   Updated: 2021/10/02 01:23:39 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <string_view>
 
 using coord = std::pair<int, int>;
+using c_ptr = std::shared_ptr<cell>;
 
 class excel
 {
@@ -41,7 +42,8 @@ class excel
 					<< "\n/* Size of Max Col is 26 (A to Z) */"
 					<<	"\n/* Type 1 is Text Table */"
 					<< "\n/* Type 2 is HTML Table */"
-					<< "\n/* Type 3 is CSV Table */\n\n";
+					<< "\n/* Type 3 is CSV Table */"
+					<< "\n\n/* Press 0 to exit */\n\n";
 		}
 
 		static void						_arguments(int& args, const std::string_view o, const std::string_view e)
@@ -71,6 +73,8 @@ class excel
 			while ((ss >> temp))
 				chunks.push_back(temp);
 			ss.clear();
+			if (chunks.empty())
+				return (-1);
 			if (inst.find(chunks[0]) == std::end(inst))
 				return (-1);
 			if (chunks[0] == "EXPT")
@@ -82,32 +86,68 @@ class excel
 			}
 			else if (chunks[0] == "EXIT")
 				return (2);
-			// register cell
+			if (chunks.size() < 3)
+				return (-1);
+			auto						begin = std::begin(chunks) + 3;
+			auto						end = std::end(chunks);
+			while (begin != end)
+				chunks[2] += *begin++;
+			if (!std::isalpha(chunks[1][0]) || !std::isdigit(chunks[1][1]))
+				return (-1);
+			try {
+				std::string_view		val = chunks[1];
+				int						col = chunks[1][0] - 'A';
+				int						row = std::stoi(val.substr(1).data());
+				c_ptr					data;
+
+				switch (chunks[0][3])
+				{
+					case 'S':
+						data = std::make_shared<string_cell>(chunks[2], row, col, _ptr);
+						break ;
+					case 'N':
+						data = std::make_shared<numeric_cell>(std::stold(chunks[2]), row, col, _ptr);
+						break ;
+					case 'D':
+						data = std::make_shared<date_cell>(chunks[2], row, col, _ptr);
+						break ;
+					case 'E':
+						data = std::make_shared<expr_cell>(chunks[2], row, col, _ptr);
+						break ;
+				}
+				_ptr->reg_cell(data);
+			} catch (std::exception& e) {
+				return (-1);
+			}
 			return (0);
 		}
 
 		bool							_interaction(void)
 		{
+			text_table					conv;
+
+			conv = *_ptr;
+			std::cout << &conv << "\n\n";
 			while (true)
 			{
 				int						retn;
 				std::string				temp;
 
-				std::cout << "There are 6 instructions (SETS) (SETN) (SETD) (SETE) (EXPT) (EXIT)\n\n"
+				std::cout << "There are 6 instructions (SETS - string) (SETN - numeric) (SETD - date) (SETE - expression) (EXPT) (EXIT)\n\n"
 					<< "set instructions are to make the cell in table\t\t->\t$(set-instruction) $(cell-name) $(content)\n"
 					<< "expt instruction is to out the table to the file\t->\t$(expt)\n"
 					<< "exit instruction is turn down the program\t\t->\t$(exit)\n\n";
 				std::getline(std::cin >> std::ws, temp);
 				std::transform(std::begin(temp), std::end(temp), std::begin(temp), [] (auto& i) { return (std::toupper(i)); });
 				retn = _parse_and_execute(temp);
+				conv = *_ptr;
 				switch (retn)
 				{
 					case -1:
-					// \E[H\E[2J\E[3J
-						std::cout << "Instruction is not well formatted\n\n";
+						std::cout << "\E[H\E[2J\E[3JInstruction is not well formatted\n\n" << &conv << "\n\n";
 						break ;
 					case 0:
-						std::cout << _ptr.get() << "\n\n";
+						std::cout << "\E[H\E[2J\E[3J" << &conv << "\n\n";
 						continue ;
 					case 1:
 						std::cout << "File out is completed\n\n";
@@ -171,6 +211,8 @@ class excel
 			{
 				excel::_information(status);
 				excel::_arguments(option, "Type\t", e1);
+				if (option == 0)
+					break ;
 				if (option < 1 || option > 3)
 				{
 					++status;
