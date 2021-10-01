@@ -6,7 +6,7 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/01 19:19:57 by jseo              #+#    #+#             */
-/*   Updated: 2021/10/01 23:14:35 by jseo             ###   ########.fr       */
+/*   Updated: 2021/10/02 00:12:51 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,12 @@
 # define CLI_H
 
 # include "h_excel.hpp"
+#include <fstream>
+# include <set>
 # include <limits>
+#include <sstream>
+#include <string>
+#include <string_view>
 
 using coord = std::pair<int, int>;
 
@@ -24,6 +29,7 @@ class excel
 		coord							_max_pos;
 		int								_opt;
 		std::shared_ptr<table>			_ptr;
+		std::string						_ext;
 
 		static void						_information(int& status)
 		{
@@ -57,7 +63,27 @@ class excel
 
 		int								_parse_and_execute(std::string_view sv)
 		{
+			std::stringstream			ss(sv.data());
+			std::string					temp;
+			std::vector<std::string>	chunks;
+			std::set<std::string>		inst{"SETS", "SETN", "SETD", "SETE", "EXPT", "EXIT"};
 
+			while ((ss >> temp))
+				chunks.push_back(temp);
+			ss.clear();
+			if (inst.find(chunks[0]) == std::end(inst))
+				return (-1);
+			if (chunks[0] == "EXPT")
+			{
+
+				std::ofstream			out("output" + _ext);
+				out << _ptr.get();
+				return (1);
+			}
+			else if (chunks[0] == "EXIT")
+				return (2);
+			// register cell
+			return (0);
 		}
 
 		bool							_interaction(void)
@@ -67,15 +93,24 @@ class excel
 				int						retn;
 				std::string				temp;
 
-				std::getline(std::cin, temp);
+				std::cout << "There are 6 instructions (SETS) (SETN) (SETD) (SETE) (EXPT) (EXIT)\n\n"
+					<< "set instructions are to make the cell in table\t\t->\t$(set-instruction) $(cell-name) $(content)\n"
+					<< "expt instruction is to out the table to the file\t->\t$(expt)\n"
+					<< "exit instruction is turn down the program\t\t->\t$(exit)\n\n";
+				std::getline(std::cin >> std::ws, temp);
 				std::transform(std::begin(temp), std::end(temp), std::begin(temp), [] (auto& i) { return (std::toupper(i)); });
 				retn = _parse_and_execute(temp);
-				std::cout << _ptr.get() << "\n\n";
 				switch (retn)
 				{
+					case -1:
+					// \E[H\E[2J\E[3J
+						std::cout << "Instruction is not well formatted\n\n";
+						break ;
 					case 0:
+						std::cout << _ptr.get() << "\n\n";
 						continue ;
 					case 1:
+						std::cout << "File out is completed\n\n";
 						return (true);
 					case 2:
 						return (false);
@@ -99,12 +134,15 @@ class excel
 			{
 				case 0:
 					_ptr = std::make_unique<text_table>(max_row, max_col);
+					_ext = std::string(".txt");
 					break ;
 				case 1:
 					_ptr = std::make_unique<html_table>(max_row, max_col);
+					_ext = std::string(".html");
 					break ;
 				case 2:
 					_ptr =std::make_unique<csv_table>(max_row, max_col);
+					_ext = std::string(".csv");
 					break ;
 			}
 		}
@@ -141,7 +179,8 @@ class excel
 				}
 				excel::_arguments(max_row, "Max Row\t", e2);
 				excel::_arguments(max_col, "Max Col\t", e3);
-				excel e(max_row, max_col, option);
+				excel e(max_row, max_col, option - 1);
+				std::cout << "\n";
 				if (!e._interaction())
 					break ;
 			}
