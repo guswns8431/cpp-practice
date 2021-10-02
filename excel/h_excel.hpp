@@ -6,7 +6,7 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/01 15:06:30 by jseo              #+#    #+#             */
-/*   Updated: 2021/10/02 01:40:59 by jseo             ###   ########.fr       */
+/*   Updated: 2021/10/02 22:30:31 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ using t_ref = std::weak_ptr<table>;
 using c_ptr = std::shared_ptr<cell>;
 using t_vec = std::vector<std::pair<coord, c_ptr> >;
 
+std::ostream&							operator<<(std::ostream& out, table *t_ptr);
 long double								circular_find(t_ptr ptr, const std::string& str);
 
 class cell
@@ -632,16 +633,5 @@ class csv_table : public table
 			return (temp);
 		}
 };
-
-std::ostream&							operator<<(std::ostream& out, table *t_ptr)
-{
-	out << t_ptr->print();
-	return (out);
-}
-
-long double								circular_find(t_ptr ptr, const std::string& str)
-{
-	return (ptr->to_numeric(str));
-}
 
 #endif

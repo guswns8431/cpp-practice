@@ -6,7 +6,7 @@
 /*   By: jseo <jseo@student.42seoul.kr>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/01 19:19:57 by jseo              #+#    #+#             */
-/*   Updated: 2021/10/02 01:47:13 by jseo             ###   ########.fr       */
+/*   Updated: 2021/10/02 22:42:04 by jseo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,38 +63,39 @@ class excel
 			}
 		}
 
-		int								_parse_and_execute(std::string_view sv)
+		int								_deletion(std::vector<std::string>& chunks)
 		{
-			std::stringstream			ss(sv.data());
-			std::string					temp;
-			std::vector<std::string>	chunks;
-			std::set<std::string>		inst{"SETS", "SETN", "SETD", "SETE", "EXPT", "EXIT"};
-
-			while ((ss >> temp))
-				chunks.push_back(temp);
-			ss.clear();
-			if (chunks.empty())
+			if (chunks.size() < 2)
 				return (-1);
-			if (inst.find(chunks[0]) == std::end(inst))
+			if (!std::isalpha(chunks[1][0]) || !std::isdigit(chunks[1][1]))
 				return (-1);
-			if (chunks[0] == "EXPT")
+			try
 			{
-
-				std::ofstream			out("output" + _ext);
-				out << _ptr.get();
-				return (1);
+				std::string_view		val = chunks[1];
+				int						col = chunks[1][0] - 'A';
+				int						row = std::stoi(val.substr(1).data());
+				c_ptr					data = std::make_shared<cell>(row, col, _ptr);
+				_ptr->reg_cell(data);
 			}
-			else if (chunks[0] == "EXIT")
-				return (2);
+			catch (std::exception& e)
+			{
+				return (-1);
+			}
+			return (0);
+		}
+
+		int								_creation(std::vector<std::string>& chunks)
+		{
 			if (chunks.size() < 3)
 				return (-1);
 			auto						begin = std::begin(chunks) + 3;
 			auto						end = std::end(chunks);
 			while (begin != end)
-				chunks[2] += *begin++;
+				chunks[2] += std::string(" ") + *begin++;
 			if (!std::isalpha(chunks[1][0]) || !std::isdigit(chunks[1][1]))
 				return (-1);
-			try {
+			try
+			{
 				std::string_view		val = chunks[1];
 				int						col = chunks[1][0] - 'A';
 				int						row = std::stoi(val.substr(1).data());
@@ -116,10 +117,38 @@ class excel
 						break ;
 				}
 				_ptr->reg_cell(data);
-			} catch (std::exception& e) {
+			}
+			catch (std::exception& e)
+			{
 				return (-1);
 			}
 			return (0);
+		}
+
+		int								_parse_and_execute(std::string_view sv)
+		{
+			std::stringstream			ss(sv.data());
+			std::string					temp;
+			std::vector<std::string>	chunks;
+			std::set<std::string>		inst{"SETS", "SETN", "SETD", "SETE", "DELC", "EXPT", "EXIT"};
+
+			while ((ss >> temp))
+				chunks.push_back(temp);
+			ss.clear();
+			if (chunks.empty() || inst.find(chunks[0]) == std::end(inst))
+				return (-1);
+			if (chunks[0] == "EXPT")
+			{
+				std::ofstream			out("output" + _ext);
+				out << _ptr.get();
+				return (1);
+			}
+			else if (chunks[0] == "EXIT")
+				return (2);
+			else if (chunks[0] == "DELC")
+				return (_deletion(chunks));
+			else
+				return (_creation(chunks));
 		}
 
 		bool							_interaction(void)
@@ -133,8 +162,9 @@ class excel
 				int						retn;
 				std::string				temp;
 
-				std::cout << "There are 6 instructions (SETS - string) (SETN - numeric) (SETD - date) (SETE - expression) (EXPT) (EXIT)\n\n"
+				std::cout << "There are 7 instructions (SETS - string) (SETN - numeric) (SETD - date) (SETE - expression) (DELC - deletion) (EXPT) (EXIT)\n\n"
 					<< "set instructions are to make the cell in table\t\t->\t$(set-instruction) $(cell-name) $(content)\n"
+					<< "delc instruction is to delete the cell in the table\t->\t$(delc) $(cell-name)\n"
 					<< "expt instruction is to out the table to the file\t->\t$(expt)\n"
 					<< "exit instruction is turn down the program\t\t->\t$(exit)\n\n";
 				std::getline(std::cin >> std::ws, temp);
